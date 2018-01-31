@@ -114,7 +114,11 @@ func Start() {
 	initLogFuncs()
 	initFolders()
 	setEnvVars()
-	watch()
+	if os.Getenv("USE_DU") == "true" {
+		duWatcher()
+	} else {
+		watch()
+	}
 	start()
 	startChannel <- "/"
 

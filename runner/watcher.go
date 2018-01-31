@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/howeyc/fsnotify"
+	"time"
 )
 
 func watchFolder(path string) {
@@ -54,4 +55,36 @@ func watch() {
 
 		return err
 	})
+}
+
+var size int64
+
+func duWatcher() {
+	root := root()
+	go func(startChannel chan string, root string) {
+		for {
+			var currentSize int64
+			filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+				if info.IsDir() && !isTmpDir(path) {
+					if len(path) > 1 && strings.HasPrefix(filepath.Base(path), ".") {
+						return filepath.SkipDir
+					}
+
+					if isIgnoredFolder(path) {
+						watcherLog("Ignoring %s", path)
+						return filepath.SkipDir
+					}
+				} else if !info.IsDir() {
+					currentSize += info.Size()
+				}
+
+				return err
+			})
+			if currentSize != size {
+				size = currentSize
+				startChannel <- "ChangeSize"
+			}
+			time.Sleep(2 * time.Second)
+		}
+	}(startChannel, root)
 }
