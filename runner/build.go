@@ -35,5 +35,10 @@ func build() (string, bool) {
 		return string(errBuf), false
 	}
 
+	err = exec.Command("chmod", "a+rx", buildPath()).Run()
+	if err != nil {
+		return string(errBuf), false
+	}
+
 	return "", true
 }
