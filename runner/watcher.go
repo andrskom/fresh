@@ -74,8 +74,11 @@ func duWatcher() {
 						watcherLog("Ignoring %s", path)
 						return filepath.SkipDir
 					}
-				} else if !info.IsDir() {
-					currentSize += info.Size()
+				}
+				if !info.IsDir() {
+					if isWatchedFile(path) {
+						currentSize += info.Size()
+					}
 				}
 
 				return err
